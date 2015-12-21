@@ -1,0 +1,29 @@
+﻿<Controls:MetroWindow 
+        x:Class="CSGOStat.StatWinView"
+        xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CSGOStat"
+        mc:Ignorable="d"
+        Title="StatWinView" Height="600" Width="800"
+        ShowTitleBar="False" Background="{x:Null}"
+    
+    
+        >
+    <Controls:MetroWindow.Effect>
+        <DropShadowEffect/>
+    </Controls:MetroWindow.Effect>
+    <Grid>
+        <Grid>
+            <Grid.Background>
+                <ImageBrush ImageSource="{Binding Path=BackgroundIMG}"/>
+            </Grid.Background>
+        </Grid>
+        <DockPanel>
+            <StackPanel DockPanel.Dock="Top" Height="50"></StackPanel>
+            <StackPanel DockPanel.Dock="Top"> </StackPanel>
+        </DockPanel>
+    </Grid>
+</Controls:MetroWindow>
