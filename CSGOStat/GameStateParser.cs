@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using CSGSI;
 using CSGSI.Nodes;
 using Caliburn.Micro;
+using System.Timers;
+using System.Globalization;
 
 namespace CSGOStat
 {
@@ -28,6 +30,8 @@ namespace CSGOStat
         private bool _isBombPlanted;
         private PlayerNode _you;
         private Teams tms;
+        private Timer _timer;
+        private DateTime _roundTime;
 
 
         //This should be run in a try catch
@@ -41,8 +45,22 @@ namespace CSGOStat
                 throw new GameStateInitFailedException("GameStateIntegration Initialization failed");
             }
             GSInit = true;
+            InitTimer();
         }
         
+        private void InitTimer()
+        {
+            _timer = new Timer(1000);
+            //Autoreset kept off to not have unneeded time changed events.
+            _timer.AutoReset = true;
+            _timer.Elapsed += OnTimeElapsedOneSecond;
+        }
+
+        //1 sec elapsed.
+        private void OnTimeElapsedOneSecond(Object source, ElapsedEventArgs e)
+        {
+            _roundTime.Add(new TimeSpan(0, 0, 0, 1));
+        }
 
         void OnNewGameState(GameState gs)
         {
@@ -50,9 +68,52 @@ namespace CSGOStat
             You = gs.Player;
             tms = GetTeams(gs);
             BombHandling(gs);
+            TimerHandling(gs);
         }
 
+        private void TimerHandling(GameState gs)
+        {
+            //Logic happening in different round phases happens here
+            switch (gs.Round.Phase)
+            {
+                case RoundPhase.Live:
+                    //If timer isnt enabled, and as the case states, the round is live, we start the timer, and initialize the time to 2 min.
+                    //Timer.start just changes the Timer.Enabled property to true, nothing else afaik.
+                    if (!_timer.Enabled)
+                    {
+                        _timer.Start();
+                        _roundTime = Parse_time("02:00");
+                    }
+                    break;
+                default:
+                    //If it hits any unhandled case, default to stopping the clock, and setting time to zero.
+                    _timer.Stop();
+                    _roundTime = Parse_time("00:00");
+                    break;
+            }
+        }
 
+        //parses time input in the format "mm:ss", and returns a datetime. 
+        private DateTime Parse_time(string time)
+        {
+            DateTime dTime;
+            var format = "mm:ss";
+            CultureInfo provider = CultureInfo.InvariantCulture;
+            dTime = DateTime.ParseExact(time, format, provider);
+            return dTime;
+        }
+
+        public DateTime RoundTime
+        {
+            get { return _roundTime; }
+        }
+        public Score GetScore()
+        {
+            Score _score;
+            _score.ctScore = Currentgs.Map.TeamCT.Score;
+            _score.tScore = Currentgs.Map.TeamT.Score;
+            return _score;
+        }
         public Teams GetTeams(GameState gs)
         {
             List<PlayerNode> teammates = new List<PlayerNode>();
@@ -71,6 +132,7 @@ namespace CSGOStat
 
             return teams; 
         }
+
         private void BombHandling(GameState gs)
         {
             if(!IsBombPlanted &&
@@ -138,7 +200,6 @@ namespace CSGOStat
                 NotifyOfPropertyChange(() => Tms);
             }
         }
-
         public GameState Currentgs
         {
             get

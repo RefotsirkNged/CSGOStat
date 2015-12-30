@@ -28,12 +28,15 @@ namespace CSGOStat
             GSP = new GameStateParser(3000);
         }
 
+        public DateTime RoundTime
+        {
+            get { return GSP.RoundTime; }
+        }
 
-
-
-
-
-
+        public Score CurrentScore
+        {
+            get { return GSP.GetScore(); }
+        }
 
 
         public string BackgroundIMG
